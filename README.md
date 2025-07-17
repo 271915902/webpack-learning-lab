@@ -5,5 +5,5 @@
 # 项目导航
 
 - [webpack初体验](./01-webpack_basic)
-- [webpack样式loader使用](./02_webpack_basic)
+- [webpack样式loader使用](./02_webpack_css)
 
