@@ -1,1 +1,3 @@
-# webpack-learning-lab
+
+## 🚀 webpack-learning-lab
+通过这个项目来记录回顾前端知识，也算是给自己构建一个知识库，帮助自己更好的去理解和学习前端里那些优秀的工具和知识。

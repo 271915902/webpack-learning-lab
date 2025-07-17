@@ -1,29 +1,112 @@
-01.webpack 的基本使用
-随着前端项目的蓬勃发展,前端项目的代码量也在不断增加，而项目的代码量增加，就会导致项目的维护成本不断增加，所以需要一个工具来帮助我们管理项目的代码，这个工具就是 webpack。
-举个例子：不论是我们写 React 还是写 Sass 浏览器都是不认识我们写的代码的，但是 webpack 可以将我们写的代码转换为浏览器认识的代码。
 
-当前示例里我先是创建了一个 index.js 的文件 然后创建了一个 utils 工具文件 这个工具文件里我写了一个加法的函数 然后在 index.js 文件里我引入了这个工具文件，并且调用了这个加法函数。 -那么有个问题，index.js 可以直接运行在浏览器上吗？ -答案是不一定，浏览器可能不兼容模块化，也可能不兼容 ES6 的语法，所以我们需要 webpack 来将我们的代码转换为浏览器认识的代码。
+# 01_webpack基础
 
-所以这个时候就需要借助到 webpack 来帮助我们打包代码
-首先 执行 npm init -y 初始化项目
-然后 执行 npm install webpack webpack-cli -D 安装 webpack （这里为什么是局部安装而不是全局安装？ 因为我们的电脑里可能有很多项目 每个项目对应的 webpack 版本也可能不一致 所以是需要区分版本的）
-最后 执行 npx webpack 打包代码 （npx webpack 会自动的去 node_modules 里找 webpack 然后执行 webpack 这里为什么不直接执行 webpack 而是要执行 npx webpack 呢？ 因为 webpack 是一个局部安装的包 所以我们需要在当前项目里执行 而 npx webpack 会自动的去 node_modules 里找 webpack 然后执行 webpack）
+这个demo主要是了解webpack以及简单的使用
 
-执行完毕以后项目产生 dist 目录 里面的文件就是我们打包后的代码
-这个时候本地生成一个 index.html 通过 script 标签直接引入打包后 dist 目录下文件
-一切完美的运行在了浏览器上
 
-问题一
-如果我把 src/index.js 改为了 main.js,再去执行 npx webpack,会出现打包错误,原因是因为 webpack 默认的打包入口是 src/index.js,如果我们想改变打包的入口,
-若是想改变 webpack 打包文件入口，可以使用命令 npx webpack --entry ./src/main.js
-问题二
-如果不希望打包后的文件名是 main.js,而是希望打包后的文件名是 bundle.js,可以使用命令 npx webpack --output-filename bundle.js
-如果我希望打包后的文件是 dist 目录而是 build 目录,可以使用命令 npx webpack --output-path ./build
-问题三
-每次打包都要输入这么长的命令，难免会有些麻烦，所以我们可以通过一个 webpack 的配置文件进行统一管理，即 webpack.config.js 文件
-webpack 是运行在 node 环境下的，所以使用 common.js 规范导出
-如果给 path 直接设置 ./build 为值,会出现错误，原因是 webpack 期望的是一个绝对路径，所以我们需要使用 path.resolve(\_\_dirname, "./build") 来获取当前目录的绝对路径
-问题四
-如果把配置文件改为别的名字 需要打包的时候执行 npx webpack --config "新的配置文件名"
-问题五
-每次打包都要输入很多命令，所以可以在 package.json 文件里配置一个脚本，这样就可以直接执行 npm run build 来进行打包了
+## 为什么使用webpack?
+
+-  浏览器原生对 ES Modules (ESM) 的支持相对较晚且有限，老浏览器完全不支持。项目规模增大时，手动管理`<script>`标签顺序和依赖关系极其困难且容易出错。
+- 现代前端项目不仅仅是 JavaScript，还包括 CSS（Sass/Less/Stylus）、图片、字体、数据文件（JSON, CSV）、模板（Vue, JSX）等。浏览器无法直接处理非 JS 资源或较新的 JS 语法（如 JSX, TypeScript）。
+- 需要对构建过程进行更复杂的操作，如代码压缩、环境变量注入、生成 HTML 文件、拷贝静态资源、分析包大小、实现热更新等。
+- ...
+针对以上种种前端开发中的痛点webpack这一前端构建工具可以帮助我们更好的去进行开发。
+
+
+
+## Demo说明
+
+首先我创建了一个`index.js`文件,并且创建了一个`utils`目录，在其中导出了一个`add`函数,然后在`index.js`导入并使用
+
+index.js
+
+```javascript
+import { add } from "./utils/add";
+const text = "hello webpack";
+console.log(add(1, 2));
+console.log(text);
+```
+add.js
+```javascript
+export function add(a, b) {
+  return a + b;
+}
+  
+```
+
+## 那么这个`index.js`文件可以通过`html`引入并且运行在浏览器上吗？
+我认为是不一定的，我使用了`模块化`引入和es6语法`const`定义变量，浏览器是不一定可以兼容和支持的。
+所以需要借助webpack帮我去打包代码让他变得可以被浏览器兼容和认识。
+
+## 安装webpack
+
+初始化项目
+```bash
+  npm init -y 
+```
+
+安装webpack 和 webpack-cli
+
+（这里使用局部安装而不是全局安装，考虑到我们的电脑中一般有不止一个项目，而这些项目也不一定是同一个webpack版本，所以针对不同的项目进行局部安装，也方便管理和维护。）
+
+```bash
+  npm install webpack webpack-cli -D
+```
+
+打包代码
+
+```bash
+  npx webpack 
+```
+## 打包完毕
+
+打包结束以后我们会发现文件根目录下有一个`dist`文件夹，`dist`文件夹下的`main.js` 便是打包以后的代码,这个时候新建一个`html`文件引入`dist/main.js`，代码便成功的运行了。
+
+## 修改打包入口文件名
+ 如果把`index.js`改名为`main.js`这个时候再去打包，控制台会进行报错，原因是当使用webpack打包命令的时候，默认的入口文件就是`index.js`，如果我们想改变入口文件名，需要修改命令
+```bash
+  npx webpack --entry ./src/xxx.js 
+```
+## 修改打包出口文件目录和文件名
+ 默认的打包出口目录是`dist` 出口文件名是`main.js`
+
+ 修改目录名
+```bash
+  npx webpack --output-path ./build 
+```
+ 修改文件名
+```bash
+  npx webpack --output-filename bundle.js
+```
+## 生成配置文件
+每次输入这么多命令难免会有些繁琐，所以可以通过生成一个配置文件去配置webpack
+webpack中默认的配置文件名是`webpack.config.js`
+可以把上述的入口出口文件名都配置在这个配置文件里
+这里使用了path模块是因为webpack需要一个绝对路径，使用`path.resolve`方法去生成
+```javascript
+const path = require("path");
+module.exports = {
+  entry: "./src/main.js",
+  output: {
+    filename: "bundle.js",
+    path: path.resolve(__dirname, "./build"),
+  },
+};
+  
+```
+## 配置脚本命令
+可以在packge.json中配置一个打包的脚本命令
+
+```javascript
+"scripts": {
+    "build": "webpack"
+  },
+  
+```
+这样以后打包直接输入脚本命令就可以了
+```bash
+  npm run build
+```
+以上就是我对webpack的一个初体验。
+
+
