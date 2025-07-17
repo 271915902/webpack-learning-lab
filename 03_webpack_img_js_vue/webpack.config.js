@@ -1,9 +1,17 @@
 const path = require("path");
+const { VueLoaderPlugin } = require("vue-loader");
 module.exports = {
   entry: "./src/index.js",
   output: {
     filename: "bundle.js",
     path: path.resolve(__dirname, "./build"),
+  },
+  resolve: {
+    extensions: [".js", ".vue"],
+    mainFiles: ["index"],
+    alias: {
+      utils: path.resolve(__dirname, "./src/utils"),
+    },
   },
   module: {
     rules: [
@@ -46,6 +54,23 @@ module.exports = {
         },
         use: ["file-loader"],
       },
+      {
+        test: /\.js$/,
+        use: ["babel-loader"],
+        // use: [
+        //   {
+        //     loader: "babel-loader",
+        //     options: {
+        //       plugins: ["@babel/plugin-transform-arrow-functions"],
+        //     },
+        //   },
+        // ],
+      },
+      {
+        test: /\.vue$/,
+        use: ["vue-loader"],
+      },
     ],
   },
+  plugins: [new VueLoaderPlugin()],
 };

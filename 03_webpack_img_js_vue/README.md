@@ -1,112 +1,197 @@
 
-# 01_webpack基础
+# 02_webpack_img_js_vue
 
-这个demo主要是了解webpack以及简单的使用
+这个demo用来演示webpack处理图片，js文件，vue文件
 
+# Demo说明
+创建了vue_demo文件夹和App.vue文件
 
-## 为什么使用webpack?
-
--  浏览器原生对 ES Modules (ESM) 的支持相对较晚且有限，老浏览器完全不支持。项目规模增大时，手动管理`<script>`标签顺序和依赖关系极其困难且容易出错。
-- 现代前端项目不仅仅是 JavaScript，还包括 CSS（Sass/Less/Stylus）、图片、字体、数据文件（JSON, CSV）、模板（Vue, JSX）等。浏览器无法直接处理非 JS 资源或较新的 JS 语法（如 JSX, TypeScript）。
-- 需要对构建过程进行更复杂的操作，如代码压缩、环境变量注入、生成 HTML 文件、拷贝静态资源、分析包大小、实现热更新等。
-- ...
-针对以上种种前端开发中的痛点webpack这一前端构建工具可以帮助我们更好的去进行开发。
+创建了img文件夹和图片demo.jpg
 
 
-
-## Demo说明
-
-首先我创建了一个`index.js`文件,并且创建了一个`utils`目录，在其中导出了一个`add`函数,然后在`index.js`导入并使用
-
-index.js
+# 图片打包
+webpack也会帮助我们打包图片资源，还是先引入到div_cpn.js里的img元素当中，
+这样图片出现在了关系依赖图中就会被打包。
+webpack现在默认内部就有处理图片的loader,只需要配置即可。
+# file-loader
+对png jpg gif svg后缀的文件进行打包
+```javascript
+{
+        test: /\.(png|jpg|gif|svg)$/,
+        type: "asset",
+        use: ["file-loader"],
+      },
+```
+这里相比以往的配置多了一个type属性，这个属性有三个常见值
+| value  | Description                |
+| :-------- |:------------------------- |
+| `asset/resource` | 将图片打包为url的形式，然后在使用的地方引入 | 
+| `asset/inline` | 将图片打包为base64格式，直接在入口文件中使用| 
+| `asset` |自动选择， 大文件使用图片url打包 小一点的使用base64打包 | 
+如果使用了`asset`我们也可以指定文件大小的limit,通过parser对象
 
 ```javascript
-import { add } from "./utils/add";
-const text = "hello webpack";
-console.log(add(1, 2));
-console.log(text);
+  {
+        test: /\.(png|jpg|gif|svg)$/,
+        type: "asset",
+        parser: {
+          dataUrlCondition: {
+            maxSize: 100 * 1024, // 100kb
+          },
+        },
+        use: ["file-loader"],
+      },
 ```
-add.js
+
+默认的图片打包以后文件名是hash乱码，我们也可以指定输出的文件名
+generator对象
+加了img/就会在build目录下生成一个img文件夹去存放这些打包以后的图片
 ```javascript
-export function add(a, b) {
-  return a + b;
-}
-  
+  {
+        test: /\.(png|jpg|gif|svg)$/,
+        type: "asset",
+        parser: {
+          dataUrlCondition: {
+            maxSize: 100 * 1024, // 100kb
+          },
+        },
+        generator: {
+          filename: "img/[name]_[hash:6][ext]",
+        },
+        use: ["file-loader"],
+      },
 ```
+# 处理js
+webpack默认就有处理js的功能，为什么还需要打包js呢，那是因为默认遇到es6代码，只是会做一些丑化处理，并不会转化成es5确保浏览器的兼容。
+所以需要一个babel工具，babel本身也可以作为一个独立的工具来使用
 
-## 那么这个`index.js`文件可以通过`html`引入并且运行在浏览器上吗？
-我认为是不一定的，我使用了`模块化`引入和es6语法`const`定义变量，浏览器是不一定可以兼容和支持的。
-所以需要借助webpack帮我去打包代码让他变得可以被浏览器兼容和认识。
+# babel使用
+在webpack中，我们可以通过babel-loader去打包js代码
 
-## 安装webpack
-
-初始化项目
-```bash
-  npm init -y 
-```
-
-安装webpack 和 webpack-cli
-
-（这里使用局部安装而不是全局安装，考虑到我们的电脑中一般有不止一个项目，而这些项目也不一定是同一个webpack版本，所以针对不同的项目进行局部安装，也方便管理和维护。）
-
-```bash
-  npm install webpack webpack-cli -D
-```
-
-打包代码
 
 ```bash
-  npx webpack 
+  npm install babel-loader -D
 ```
-## 打包完毕
+babael和postcss一样，里面有很多插件需要单独下载配置，
+比如我想对箭头函数语法做转化，那么就要下载相关插件
 
-打包结束以后我们会发现文件根目录下有一个`dist`文件夹，`dist`文件夹下的`main.js` 便是打包以后的代码,这个时候新建一个`html`文件引入`dist/main.js`，代码便成功的运行了。
+```bash
+  npm install @babel/plugin-transform-arrow-functions -D
+```
+然后进行配置
 
-## 修改打包入口文件名
- 如果把`index.js`改名为`main.js`这个时候再去打包，控制台会进行报错，原因是当使用webpack打包命令的时候，默认的入口文件就是`index.js`，如果我们想改变入口文件名，需要修改命令
-```bash
-  npx webpack --entry ./src/xxx.js 
-```
-## 修改打包出口文件目录和文件名
- 默认的打包出口目录是`dist` 出口文件名是`main.js`
-
- 修改目录名
-```bash
-  npx webpack --output-path ./build 
-```
- 修改文件名
-```bash
-  npx webpack --output-filename bundle.js
-```
-## 生成配置文件
-每次输入这么多命令难免会有些繁琐，所以可以通过生成一个配置文件去配置webpack
-webpack中默认的配置文件名是`webpack.config.js`
-可以把上述的入口出口文件名都配置在这个配置文件里
-这里使用了path模块是因为webpack需要一个绝对路径，使用`path.resolve`方法去生成
 ```javascript
-const path = require("path");
+  {
+        test: /\.js$/,
+        use: [
+          {
+            loader: "babel-loader",
+            options: {
+              plugins: ["@babel/plugin-transform-arrow-functions"],
+            },
+          },
+        ],
+      },
+```
+和postcss-loader一样，也可以单独抽离一个babel的配置文件
+
+babel.config.js
+```javascript
 module.exports = {
-  entry: "./src/main.js",
+    plugins: ["@babel/plugin-transform-arrow-functions"],
+  
+};
+
+```
+和postcss-loader一样，babel也提供了一个预设插件
+
+```bash
+  npm install @babel/preset-env -D
+```
+
+```javascript
+module.exports = {
+  presets: ["@babel/preset-env"],
+};
+
+```
+babel-loader的使用方法和postcss-loader很像
+
+# 处理Vue文件
+实际企业开发里，我们更多的使用的是框架，.vue文件或者.jsx文件，这些文件也是需要webpack帮助我们打包以后才能运行。
+
+下载vue框架
+```bash
+  npm install vue
+```
+然后通过就是使用vue语法简单构建了App.vue,然后在div_cpn.js使用，
+最后在index.html定义了一个id为app的div，提供给vue挂载
+
+```JavaScript
+import { createApp } from "vue";
+import App from "./vue_demo/App.vue";
+// vue代码
+const app = createApp(App);
+app.mount("#app");
+```
+完成上述步骤以后，使用打包同样还是报错没有相应的loader，所以需要下载vue-loader
+
+```bash
+  npm install vue-loader -D
+```
+```javaScript
+ {
+        test: /\.vue$/,
+        use: ["vue-loader"],
+      },
+```
+和其他loader不同的是，vue-loader还需要额外配置一个plugins
+```javaScript
+...
+const { VueLoaderPlugin } = require("vue-loader");
+module.exports = {
+...
+module:{...}
+plugins: [new VueLoaderPlugin()],
+}
+```
+这样vue文件就可以被成功打包了。
+
+
+# webpack解析文件路径
+在通过import导入各种文件模块的时候，假如说导入的是index.js文件，通常是可以省略后缀.js
+```JavaScript
+import {demo} from "./index"
+```
+一开始导入vue文件的时候就需要指定后缀
+```JavaScript
+import App from "./App.vue"
+```
+这是因为webpack在解析文件的时候当发现没有后缀的时候他会默认的添加一些后缀去解析默认的是['.wasm', '.mjs', '.js', '.json']，
+所以如果我们希望解析vue文件的时候不需要补充后缀名，
+
+可以通过webpack的配置文件中resolve对象的extensions属性进行配置
+
+
+同理在解析文件夹的时候如果希望默认去找文件夹下的index文件也是可以进行配置
+
+某些时候当某个工具目录结构很深的时候我们往往需要写../../../utils/xxx才可以找到，这个时候也可以通过起别名alias进行配置
+这样在导入的时候只需要utils/xxx 从而省去了很多../
+
+```JavaScript
+module.exports = {
+  entry: "./src/index.js",
   output: {
     filename: "bundle.js",
     path: path.resolve(__dirname, "./build"),
   },
-};
-  
-```
-## 配置脚本命令
-可以在packge.json中配置一个打包的脚本命令
-
-```javascript
-"scripts": {
-    "build": "webpack"
+  resolve: {
+    extensions: [".js", ".vue"],
+    mainFiles: ["index"],
+    alias: {
+      utils: path.resolve(__dirname, "./src/utils"),
+    },
   },
-  
+  }
 ```
-这样以后打包直接输入脚本命令就可以了
-```bash
-  npm run build
-```
-以上就是我对webpack的一个初体验。
-
-
+以上就是我对webpack打包图片,js,vue的学习。
