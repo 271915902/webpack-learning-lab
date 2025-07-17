@@ -1,5 +1,5 @@
 
-# 02_webpack_img_js_vue
+# 03_webpack_img_js_vue
 
 这个demo用来演示webpack处理图片，js文件，vue文件
 
