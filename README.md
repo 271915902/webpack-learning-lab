@@ -6,4 +6,5 @@
 
 - [webpack初体验](./01-webpack_basic)
 - [webpack样式loader使用](./02_webpack_css)
+- [webpack图片,js,vue的loader使用](./03_webpack_img_js_vue)
 
