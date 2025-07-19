@@ -1,0 +1,14 @@
+{
+  "version": 3,
+  "file": "bundle.js",
+  "mappings": ";;;;AAAA;AACA;AACA;AACA;AACA;AACA",
+  "sources": [
+    "webpack://07-source_map/./src/index.js"
+  ],
+  "sourcesContent": [
+    "const text = \"Hello webpack\";\r\n\r\nconst foo = () => {\r\n  console.log(text);\r\n};\r\nfoo();\r\n"
+  ],
+  "names": [],
+  "sourceRoot": ""
+}
+ 
